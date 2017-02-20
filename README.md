@@ -1,11 +1,10 @@
 # Vehicle Detection
 
-In this project our main goal was to design, create and build a able pipeline to detect and track vehicles in a given video from a
-camera mounted in the front of a car.
+The main goal of this project is to design, create and build pipeline that detects and tracks vehicles in a given video from a camera mounted in the front of a car.
 
-In order to achieve this goal, we applied some computer vision and machine learning techniques. The first important phase was to define and extract the relevant features from the images applying gradients and transforms to them.
+In order to achieve this goal, some computer vision and machine learning techniques were applied. The first important stage was to define and extract the relevant features from the images applying gradients and transformations to them.
 
-Once the features were properly extracted we trained a Linear SVM classifier with the GTI vehicle image database and the KITTI vision benchmark suite datasets.
+Once the features were properly extracted a Linear SVM classifier was trained with the GTI vehicle image database and the KITTI vision benchmark suite datasets.
 
 Finally, applying a sliding-window technique, we searched for vehicles in the images, pointed them out drawing a surrounding and clear rectangle.
 
@@ -20,29 +19,31 @@ The steps of this project are the following:
 
 [//]: # (Image References)
 [image1]: ./others/car_not_car.png
-[image2]: ./output_images/how_visualization.jpg
-[image3]: ./output_images/windows.jpg
-[image4]: ./output_images/vehicle_detection.jpg
+[image2]: ./output_images/how_visualization.jpeg
+[image3]: ./output_images/windows.jpeg
+[image4]: ./output_images/vehicle_detection.jpeg
 [image5]: ./output_images/heatmaps.png
-[image7]: ./others/output_bboxes.png
+[image6]: ./others/output_bboxes.png
 [video1]: ./result.mp4
 
 ## Histogram of Oriented Gradients (HOG)
 
 ### HOG features extraction
 
-First, we needed to explore the datasets to understand the problem we were supposed to solve. Both datasets contain a bunch of examples of not-car and car images. The images are in color and have a size of 64 by 64 pixels. The images can only belong to one of two classes, it's a car image or is not. The **labels** are given by the name of the folder where the images are stored.
+First, we needed to explore the datasets to understand the problem we wanted to solve. Both datasets contain a bunch of examples of car and not-car images. The images are in color and have a size of 64 by 64 pixels. The images can only belong to one of two classes. The **labels** are given by the name of the folder where the images are stored.
 
 ![alt text][image1]
 
 As it was mentioned before, we wanted to extract the relevant features from the images in order to be able to detect vehicles in the images. Because the HOG technique works very well in this scenarios, it was decided to apply it to the images.
 
-However, the key point here was not to decide if apply HOG or not but how it was applied, or in other words select a set of proper values.
+Said that, the key point here was not to decide if apply HOG or not but how it was applied instead, or in other words select a set of proper values.
 
-It also important to mentioned that the parameters not only have an effect in terms of detection but also in terms of performance. It's not the same select 9 than 11 orientations. As well as it isn't the same either select 32 pixels_per_cell than 8.
-The feature extraction parameters selection is explained in the following section.
+It is also important to mention that the parameters not only have an effect in terms of detection but also in terms of performance. It is not the same select 9 than 11 orientations. As well as it is not the same either, select 32 pixels_per_cell than 8.
+The chosen parameters are explained in the following section.
 
 To introduce some results, in the following image it can be seen an example using the `YCrCb` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+
+![alt text][image2]
 
 ```python
 cspace = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
@@ -73,12 +74,10 @@ for idx, hog_img in enumerate(hog_image):
   plt.title('HOG Visualization')
 ```
 
-![alt text][image2]
-
 ### Feature extraction Parameters
 
-In the first part, some helper functions were defined to visualize the HOG features in images. But after that some functions were redefined
-and final parameters were the following:
+In the first approach, some helper functions were defined to visualize the HOG features from the images. After that, some functions were redefined
+and the final values for the parameters were the following:
 
 ```python
 cspace = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
@@ -93,28 +92,25 @@ hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
 ```
 
-At the beginning we tried with HLS and HSV color spaces but after several trial and error phases it seemded that
-YUV and YCrCb performed better. Finally, the YCrCb was selecetd with a number of 9 HOG orientations. It could be said that is
-a balanced number between extracting enough number of features but no so many that could slow down the training phase.
+At the beginning we tried with HLS and HSV color spaces but after several trial and error phases it seemed that
+YUV and YCrCb performed better. Finally, the YCrCb was selected with a number of **9 HOG orientations**. It could be said that is
+a balanced number between extracting enough number of features but no so many because it could slow down the training phase.
 
-As it can be seen, it was decided to select all of the three HOG channels corresponding with each color channel. This improved a lot the model performance
-
-The spatial and color extraction were also taken into account to fit the final features.
+Instead of selecting just one channel, we processed all channels of the images.
+The spatial and color extraction were also taken into account to build the final features.
 
 The final feature vector length was of 8096 in total.
 
-When the feature vectors were created, we did some relevant steps:
+When the feature vectors were built, we set some other important steps before the training phase.
 
 - Fit a per-scaler and normalize the features from the transformations and HOG extraction
 - Split up data into randomized training and test sets thanks to the ```train_test_split()``` method
 
 ### Training phase
 
-Our model is based on a Linear SVM Classifier.
+The final model was based on a Linear SVM Classifier. The training phase was successfully passed with a 99.25% of accuracy in the test set in less than 60 seconds. The SVM performs very well in image classification problems so we didn't need to tried other different models.
 
-The training phase was successfully passed with a 99.25% of accuracy in the test set in less than 60 seconds. As it known, the SVM performs very well in image classfication problems so we didn't need to tried several different models.
-
-As it can be seen, it weren't tweak the default params of the SVM (alpha or C)
+As it can be seen, we stay with the default params of the SVM (gamma or C)
 
 ```python
 # Use a linear SVC
@@ -135,37 +131,135 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 ```
 
-Once the model was properly trained, the model values were stored in a .pkl file to avoid repeating the same steps over and over and continue with the project from there.
+Once the model was properly trained, its values were stored in a .pkl file to avoid repeating the same steps and continue with the following steps from here.
 
 ## Sliding Window Search
 
 ### Windows Set up
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+The solution was based on 64 by 64 images of vehicles and not-vehicles. And at the same time, the goal of this project was to detect vehicles in a video mounted in the front of a car. In order to fit the current input in our model it was necessary to apply a sliding window search along the images to extract pieces from them and convert them in something that the model can processes.
+
+To achieve that goal, it was necessary to apply a sliding window search technique, where basically the image is divided in n pieces, and each one is separately processed.
+
+Pointing to the following code, the ```slide_window()``` method defines the grid of the windows and then, the ```search_windows()``` method searches (resizes, extracts and scales the features, and predicts using the model) in each one for a vehicle.
+
+```python
+windows = slide_window(image, x_start_stop=[None, None], y_start_stop=y_start_stop,
+                    xy_window=(96, 96), xy_overlap=(0.5, 0.5))
+
+hot_windows = search_windows(image, windows, svc, X_scaler, color_space=cspace,
+                        spatial_size=spatial_size, hist_bins=hist_bins,
+                        orient=orient, pix_per_cell=pix_per_cell,
+                        cell_per_block=cell_per_block,
+                        hog_channel=hog_channel, spatial_feat=spatial_feat,
+                        hist_feat=hist_feat, hog_feat=hog_feat)                       
+
+window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
+```
+
+![alt text][image4]
+
+After that and once we checked the model was working fine, it was defined a smarter windows definition. Instead of just define a fixed-size window, some different windows layers were defined. We did that to approximate the window parameters to the kind of elements that we wanted to find in the images.
+
+```python
+window_configs = [
+  {
+    "x_start_stop": [None, None],
+    "y_start_stop": [400, 656],
+    "xy_window": (256, 256),
+    "xy_overlap": (0.5, 0.5)
+  },
+  {
+    "x_start_stop": [None, None],
+    "y_start_stop": [400, 656],
+    "xy_window": (128, 128),
+    "xy_overlap": (0.6, 0.5)
+  },
+  {
+    "x_start_stop": [100, 1280],
+    "y_start_stop": [400, 500],
+    "xy_window": (96, 96),
+    "xy_overlap": (0.7, 0.5)
+  },
+  {
+    "x_start_stop": [500, 1280],
+    "y_start_stop": [400, 500],
+    "xy_window": (48, 48),
+    "xy_overlap": (0.7, 0.5)
+  }
+]
+```
+
+Large windows of 256 by 256 from pixel 400 to pixel 656 in the Y coordinate.
+Medium windows of 128 by 128 from pixel 400 to pixel 656 in the Y coordinate.
+Small windows of 96 by 96 from pixel 400 to pixel 500 in the Y coordinate. The X range was restricted to stop the process performance being worse.
+X-Small windows of 48 by 48 from pixel 400 to pixel 500 in the Y coordinate. The X range was also restricted in this case.
 
 ![alt text][image3]
 
-### Pipeling on images
+At the end of this process, we had several matched boxes where vehicles should hopefully appear. Taking all windows, we also created heatmaps generating arrays putting ones in the pixels where a vehicle was detected. Having these heatmaps and applying the ```scipy.ndimage.measurements.label()``` method we were able to define the final rectangles from all matching boxes.
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+![alt text][image5]
 
+### Pipeline on images
+
+At this point, the majority of the pipeline has been already explained. Doing some recap, we got a trained Linear SVM classifier with vehicles and not-vehicles data and a pipeline that split a given image in windows and then try to know if there is or not a vehicle on each window.
+
+After applying different window-layers (different positions, sizes and overlap), we build a heatmap of points where a vehicle was detected.
+
+When we knew the whole area where a vehicle could be likely found, it was required to point that area with a rectangle. In other scenario this could be an input for a hypothetical driving car agent.
+
+![alt text][image5]
 
 ## Video Implementation
 
 ### Video pipeline
-Here's a [link to my video result](./project_video.mp4)
 
+Finally, to generate the video, it was applied the same pipeline that it was to the images. In this case it was also defined a simplified python class to have control of the frame number and the last calculated boxes.
+
+```python
+class Video(object):
+
+  def __init__(self):
+    self.frame_count = 0
+    self.last_labels = None
+
+  def update(self):
+    self.frame_count += 1
+```
+
+Instead of calculate the the boxes on each frame, it was applied a filter in order to reduce the processing time and because it was useless to estimate them each 1/30 seconds.
 
 ### Vehicle tracking and False positives
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+Until this point and with the current algorithm we were able to detect the vehicles in the images but it was also possible to detect some sudden "ghost cars" (false positives) in parts of not-cars in the image. Because we were filtering, it was weird to have a continuous false positives in a particular position of the image. Instead of that, sometimes it could appear some flickering, from a bad prediction of the model. To avoid this non-desired behavior, it was set a thresholded algorithm where at least 2 or 3 boxes have to overlay each other to consider a real vehicle detection.
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
+```python
+heat = add_heat(heat,all_windows) # all_windows (detected windows)
+heat = apply_threshold(heat,3)
+labels = label(heat)
+video.last_labels = labels
+draw_image = draw_labeled_bboxes(draw_image, labels)
+return draw_image
+```
 
 ---
 
 
 ## Discussion
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+After testing the pipeline several times, it could be said that the model works fine in standard conditions. In general the key point was related to chose a good set of parameters for the feature extraction. The SVM model performed well in any case but the images process was really important.
+
+The quality of the video is quite good so the model it is predicting correctly the majority of the time. Probably in other scenarios with worse conditions of weather or light, the model wouldn't be able to vehicles in the same way as it does.
+
+In a real-world environment it should be applied more advanced techniques but at the end the concepts of extracting features applying transformations and HOG should be also present.
+We could also say that in order to create a more robust system it would be necessary to have a larger and more complex datasets with different vehicles models, roads, light and weather conditions, etc.
+
+However it's really impressive how designing a computer-vision-techniques based pipeline and training a "not-too-complicated" classification model, we were able to build a complete system that detects real cars in real videos from a camera.
+
+Some ways to improve the current model could be:
+
+- Configure more advanced windows-layers.
+- Design and train more sophisticated models.
+- Think about a more advanced vehicle tracking algorithm once a vehicle has been properly detected and avoid blind searching on each frame.
+- Set smarter thresholds to avoid detecting false positives.
