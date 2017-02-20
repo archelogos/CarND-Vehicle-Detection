@@ -1,28 +1,30 @@
 # Vehicle Detection
 
+![alt text](https://j.gifs.com/DRAR16.gif)
+
 The main goal of this project is to design, create and build pipeline that detects and tracks vehicles in a given video from a camera mounted in the front of a car.
 
 In order to achieve this goal, some computer vision and machine learning techniques were applied. The first important stage was to define and extract the relevant features from the images applying gradients and transformations to them.
 
 Once the features were properly extracted a Linear SVM classifier was trained with the GTI vehicle image database and the KITTI vision benchmark suite datasets.
 
-Finally, applying a sliding-window technique, we searched for vehicles in the images, pointed them out drawing a surrounding and clear rectangle.
+Finally, applying a sliding-window technique, we searched for vehicles in the images, pointed them with a surrounding rectangle.
 
 The steps of this project are the following:
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector.
+* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a Linear SVM classifier
+* Optionally, you can also apply a color transformation and append binned color features, as well as histograms of color, to your HOG feature vector.
 * Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+* Estimate a bounding box for the detected vehicles
 
 [//]: # (Image References)
 [image1]: ./others/car_not_car.png
-[image2]: ./output_images/how_visualization.jpeg
+[image2]: ./output_images/hog_visualization.jpeg
 [image3]: ./output_images/windows.jpeg
 [image4]: ./output_images/vehicle_detection.jpeg
-[image5]: ./output_images/heatmaps.png
+[image5]: ./output_images/heatmaps.jpeg
 [image6]: ./others/output_bboxes.png
 [video1]: ./result.mp4
 
@@ -30,15 +32,15 @@ The steps of this project are the following:
 
 ### HOG features extraction
 
-First, we needed to explore the datasets to understand the problem we wanted to solve. Both datasets contain a bunch of examples of car and not-car images. The images are in color and have a size of 64 by 64 pixels. The images can only belong to one of two classes. The **labels** are given by the name of the folder where the images are stored.
+First, we needed to explore the datasets to understand the problem we wanted to solve. Both datasets contain a bunch of examples of car and not-car images. The images are in color and have a size of 64 by 64 pixels. Besides, they can only belong to one of these classes. The **labels** are given by the name of the folder where the images are stored.
 
 ![alt text][image1]
 
-As it was mentioned before, we wanted to extract the relevant features from the images in order to be able to detect vehicles in the images. Because the HOG technique works very well in this scenarios, it was decided to apply it to the images.
+As it was mentioned before, we wanted to extract the relevant features from the images in order to be able to detect vehicles. Because the HOG technique works very well in these scenarios, it was decided to apply it to the images.
 
-Said that, the key point here was not to decide if apply HOG or not but how it was applied instead, or in other words select a set of proper values.
+Said that, the key point here was not to decide if apply HOG or not but how to apply it instead, or in other words to select a set of proper values.
 
-It is also important to mention that the parameters not only have an effect in terms of detection but also in terms of performance. It is not the same select 9 than 11 orientations. As well as it is not the same either, select 32 pixels_per_cell than 8.
+It is also important to mention that the parameters not only have an effect in terms of detection but also in terms of performance. It is not the same to select 9 than 11 orientations. As well as it is not the same either, to select 32 pixels_per_cell than 8.
 The chosen parameters are explained in the following section.
 
 To introduce some results, in the following image it can be seen an example using the `YCrCb` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
@@ -108,9 +110,9 @@ When the feature vectors were built, we set some other important steps before th
 
 ### Training phase
 
-The final model was based on a Linear SVM Classifier. The training phase was successfully passed with a 99.25% of accuracy in the test set in less than 60 seconds. The SVM performs very well in image classification problems so we didn't need to tried other different models.
+The final model was based on a Linear SVM Classifier. The training phase was successfully passed with a 99.25% of accuracy in the test set in less than 60 seconds. The SVM performs very well in image classification issues so we didn't need to try other different models.
 
-As it can be seen, we stay with the default params of the SVM (gamma or C)
+As it can be seen, we stay with the default parameters of the SVM (gamma or C)
 
 ```python
 # Use a linear SVC
@@ -131,7 +133,7 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 ```
 
-Once the model was properly trained, its values were stored in a .pkl file to avoid repeating the same steps and continue with the following steps from here.
+Once the model was properly trained, the resulting values were stored in a .pkl file to avoid repeating the same steps and continue with the following steps from here.
 
 ## Sliding Window Search
 
@@ -139,9 +141,9 @@ Once the model was properly trained, its values were stored in a .pkl file to av
 
 The solution was based on 64 by 64 images of vehicles and not-vehicles. And at the same time, the goal of this project was to detect vehicles in a video mounted in the front of a car. In order to fit the current input in our model it was necessary to apply a sliding window search along the images to extract pieces from them and convert them in something that the model can processes.
 
-To achieve that goal, it was necessary to apply a sliding window search technique, where basically the image is divided in n pieces, and each one is separately processed.
+To achieve that goal, it was necessary to apply a sliding window search technique, where basically the image is divided into N pieces, and each one is separately processed.
 
-Pointing to the following code, the ```slide_window()``` method defines the grid of the windows and then, the ```search_windows()``` method searches (resizes, extracts and scales the features, and predicts using the model) in each one for a vehicle.
+Looking at the following code, the ```slide_window()``` method defines the grid of the windows and then, the ```search_windows()``` method searches (resizes, extracts and scales the features, and predicts using the model) for a vehicle in each one.
 
 ```python
 windows = slide_window(image, x_start_stop=[None, None], y_start_stop=y_start_stop,
@@ -159,7 +161,7 @@ window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
 
 ![alt text][image4]
 
-After that and once we checked the model was working fine, it was defined a smarter windows definition. Instead of just define a fixed-size window, some different windows layers were defined. We did that to approximate the window parameters to the kind of elements that we wanted to find in the images.
+After that and once we checked the model was working fine, it was defined a smarter windows definition. Instead of just defining a fixed-size window, some different windows layers were defined. We did that to approximate the window parameters to the kind of elements that we wanted to find in the images.
 
 ```python
 window_configs = [
@@ -197,25 +199,25 @@ X-Small windows of 48 by 48 from pixel 400 to pixel 500 in the Y coordinate. The
 
 ![alt text][image3]
 
-At the end of this process, we had several matched boxes where vehicles should hopefully appear. Taking all windows, we also created heatmaps generating arrays putting ones in the pixels where a vehicle was detected. Having these heatmaps and applying the ```scipy.ndimage.measurements.label()``` method we were able to define the final rectangles from all matching boxes.
+At the end of this process, we had several matched boxes where vehicles should hopefully appear. Taking all windows, we also created heatmaps generating new arrays with ones in the pixels where a vehicle was detected. Having these heatmaps and applying the ```scipy.ndimage.measurements.label()``` method we were able to define the final rectangles from all matching boxes.
 
 ![alt text][image5]
 
 ### Pipeline on images
 
-At this point, the majority of the pipeline has been already explained. Doing some recap, we got a trained Linear SVM classifier with vehicles and not-vehicles data and a pipeline that split a given image in windows and then try to know if there is or not a vehicle on each window.
+At this point, the majority of the pipeline has been already explained. Doing some recap, we got a trained Linear SVM classifier with vehicles and not-vehicles data and a pipeline that split a given image in windows and then try to know if there is or not a vehicle in each window.
 
-After applying different window-layers (different positions, sizes and overlap), we build a heatmap of points where a vehicle was detected.
+After applying different window-layers (different positions, sizes and overlap), we built a heatmap of points where a vehicle was detected.
 
-When we knew the whole area where a vehicle could be likely found, it was required to point that area with a rectangle. In other scenario this could be an input for a hypothetical driving car agent.
+Once we knew the whole area where a vehicle could be likely found, it was required to point that area with a rectangle. In other scenario this could be an input for a hypothetical driving car agent.
 
-![alt text][image5]
+![alt text][image6]
 
 ## Video Implementation
 
 ### Video pipeline
 
-Finally, to generate the video, it was applied the same pipeline that it was to the images. In this case it was also defined a simplified python class to have control of the frame number and the last calculated boxes.
+Finally, to generate the video, it was applied the same pipeline that as to the images. In this case it was also defined a simplified python class to have control of the frame number and the last calculated boxes.
 
 ```python
 class Video(object):
@@ -228,11 +230,11 @@ class Video(object):
     self.frame_count += 1
 ```
 
-Instead of calculate the the boxes on each frame, it was applied a filter in order to reduce the processing time and because it was useless to estimate them each 1/30 seconds.
+Instead of calculating the boxes in each frame, it was applied a filter in order to reduce the processing time. Moreover it was useless to estimate them each 1/30 seconds.
 
 ### Vehicle tracking and False positives
 
-Until this point and with the current algorithm we were able to detect the vehicles in the images but it was also possible to detect some sudden "ghost cars" (false positives) in parts of not-cars in the image. Because we were filtering, it was weird to have a continuous false positives in a particular position of the image. Instead of that, sometimes it could appear some flickering, from a bad prediction of the model. To avoid this non-desired behavior, it was set a thresholded algorithm where at least 2 or 3 boxes have to overlay each other to consider a real vehicle detection.
+At this point and with the current algorithm we were able to detect the vehicles in the images but it was also possible to detect some sudden "ghost cars" (false positives) in parts of not-cars in the image. Because we were filtering, it was weird to have a continuous false positives in a particular position of the image. Instead of that, sometimes it could appear some flickering, from a bad prediction of the model. To avoid this non-desired behavior, it was set a threshold algorithm where at least 2 or 3 boxes have to overlay each other in order to consider it a real vehicle detection.
 
 ```python
 heat = add_heat(heat,all_windows) # all_windows (detected windows)
@@ -243,17 +245,19 @@ draw_image = draw_labeled_bboxes(draw_image, labels)
 return draw_image
 ```
 
+Here's a [link to THE YOUTUBE VIDEO](https://www.youtube.com/watch?v=vNLGPFKQDLs)
+
 ---
 
 
 ## Discussion
 
-After testing the pipeline several times, it could be said that the model works fine in standard conditions. In general the key point was related to chose a good set of parameters for the feature extraction. The SVM model performed well in any case but the images process was really important.
+After testing the pipeline several times, it could be said that the model works fine in standard conditions. In general, the key point was related to choose a good set of parameters for the feature extraction. The SVM model performed well in any case but the images processing was really important.
 
-The quality of the video is quite good so the model it is predicting correctly the majority of the time. Probably in other scenarios with worse conditions of weather or light, the model wouldn't be able to vehicles in the same way as it does.
+The quality of the video is quite good so that the model predicts correctly the majority of the time. Probably in other scenarios with worse weather or light conditions, the model wouldn't be able to detect vehicles in the same way as it does.
 
-In a real-world environment it should be applied more advanced techniques but at the end the concepts of extracting features applying transformations and HOG should be also present.
-We could also say that in order to create a more robust system it would be necessary to have a larger and more complex datasets with different vehicles models, roads, light and weather conditions, etc.
+In a real-world environment more advanced techniques should be applied but at the end the concepts of extracting features applying transformations and HOG should be also present.
+We could also say that in order to create a more robust system it would be necessary to have a larger and more complex datasets with different vehicle models, roads, light and weather conditions, etc.
 
 However it's really impressive how designing a computer-vision-techniques based pipeline and training a "not-too-complicated" classification model, we were able to build a complete system that detects real cars in real videos from a camera.
 
